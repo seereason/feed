@@ -47,5 +47,6 @@ library
                      old-time   >= 1,
                      xml >= 1.2.6,
                      utf8-string,
+                     bytestring,
                      time
 

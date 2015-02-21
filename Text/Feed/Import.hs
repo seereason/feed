@@ -11,6 +11,7 @@
 -- Convert from XML to Feeds.
 --
 --------------------------------------------------------------------
+{-# LANGUAGE CPP #-}
 
 module Text.Feed.Import
         ( parseFeedFromFile -- :: FilePath -> IO Feed
@@ -32,13 +33,40 @@ import Text.XML.Light.Lexer ( XmlSource )
 
 import Control.Monad
 
-import System.IO.UTF8 as UTF8 ( readFile )
+import Prelude hiding (readFile)
+
+#if MIN_VERSION_utf8_string(1,0,0)
+-- | Read the file as a packed ByteString and then apply utf8 decoder.
+-- System.IO.readFile looks at the the current locale to choose a decoder,
+-- but here we always want to use the utf8 decoder.
+
+import qualified Data.ByteString as BS (readFile)
+import Data.ByteString.UTF8 as UTF8 (toString)
+
+readFile :: FilePath -> IO String
+readFile path = BS.readFile path >>= return . UTF8.toString
+
+{-
+-- Equivalent:
+import System.IO (withBinaryFile, IOMode(ReadMode), hSetEncoding, utf8, hGetContents)
+
+readFile :: FilePath -> IO String
+readFile path = withBinaryFile path ReadMode $ \ h -> hSetEncoding h utf8 >> hGetContents h
+-}
+
+#else
+import qualified System.IO.UTF8 as UTF8 ( readFile )
+
+-- | Use the UTF8 version of readfile from the old utf8-string package.
+readFile :: FilePath -> IO String
+readFile = UTF8.readFile
+#endif
 
 -- | 'parseFeedFromFile fp' reads in the contents of the file at @fp@;
 -- the assumed encoding is UTF-8.
 parseFeedFromFile :: FilePath -> IO Feed
 parseFeedFromFile fp = do
-  ls <- UTF8.readFile fp
+  ls <- readFile fp
   case parseFeedString ls of
     Nothing -> fail ("parseFeedFromFile: not a well-formed XML content in: " ++ fp)
     Just f  -> return f
