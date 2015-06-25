@@ -48,5 +48,6 @@ library
                      xml >= 1.2.6,
                      utf8-string,
                      bytestring,
+		     time-locale-compat,
                      time
 
