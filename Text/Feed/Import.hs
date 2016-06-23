@@ -36,7 +36,7 @@ import Control.Monad
 import Prelude hiding (readFile)
 
 #if MIN_VERSION_utf8_string(1,0,0)
--- | Read the file as a packed ByteString and then apply utf8 decoder.
+-- Read the file as a packed ByteString and then apply utf8 decoder.
 -- System.IO.readFile looks at the the current locale to choose a decoder,
 -- but here we always want to use the utf8 decoder.
 
